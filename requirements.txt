@@ -7,3 +7,4 @@ reportlab
 scikit-learn
 plotly
 joblib
+matplotlib

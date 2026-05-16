@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+opencv-python-headless
+Pillow
+reportlab
+scikit-learn
+plotly
+joblib

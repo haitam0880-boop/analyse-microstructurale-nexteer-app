@@ -742,6 +742,8 @@ with tab1:
             # ── Build overlay image ───────────────────────────────────────────
             overlay = img_rgb.copy().astype(np.float64)
             for name, _, _, color_bgr, _ in phases:
+                if name != "Martensite":
+                    continue
                 color_rgb = (color_bgr[2], color_bgr[1], color_bgr[0])
                 m = masks[name]
                 for c in range(3):
@@ -781,6 +783,8 @@ with tab1:
                     "Carbures":             "#FF6D00",
                 }
                 for name, _, _, _, _ in phases:
+                    if name != "Martensite":
+                        continue
                     pct = percentages[name]
                     legend_patches.append(
                         mpatches.Patch(color=phase_colors_hex[name], label=f'{name} ({pct:.1f}%)')
@@ -882,9 +886,6 @@ with tab1:
             # Overlay colored bars per phase V-range
             phase_bar_colors = {
                 "Martensite":  ("#FF1744", seuil, 255),
-                "Ferrite":     ("#42A5F5", int(seuil*0.75), seuil-1),
-                "Perlite":     ("#8D6E63",  0, int(seuil*0.75)-1),
-                "Bainite":     ("#2E7D32",  80, seuil-1),
             }
             for pname, (pcolor, vlo, vhi) in phase_bar_colors.items():
                 mask_range = (xs >= vlo) & (xs <= vhi)
@@ -907,18 +908,15 @@ with tab1:
             plt.close(fig2)
 
             # ── Individual phase masks (expandable) ───────────────────────────
-            with st.expander("🔎 Masques individuels par phase", expanded=False):
-                mask_cols = st.columns(3)
-                for idx, (name, _, _, _, _) in enumerate(phases):
-                    with mask_cols[idx % 3]:
-                        st.markdown(f'<div class="slider-label" style="text-align:center;margin-bottom:4px;">'
-                                    f'<b style="color:{phase_colors_hex[name]}">{name}</b> — {percentages[name]:.2f}%</div>',
-                                    unsafe_allow_html=True)
-                        # Colorize mask
-                        color_rgb = tuple(int(phase_colors_hex[name][i:i+2], 16) for i in (1, 3, 5))
-                        mask_colored = np.zeros((*masks[name].shape, 3), dtype=np.uint8)
-                        mask_colored[masks[name] == 255] = color_rgb
-                        st.image(mask_colored, use_container_width=True)
+            with st.expander("🔎 Masque de Martensite", expanded=False):
+                st.markdown(f'<div class="slider-label" style="text-align:center;margin-bottom:4px;">'
+                            f'<b style="color:{phase_colors_hex["Martensite"]}">Martensite</b> — {percentages["Martensite"]:.2f}%</div>',
+                            unsafe_allow_html=True)
+                # Colorize mask
+                color_rgb = tuple(int(phase_colors_hex["Martensite"][i:i+2], 16) for i in (1, 3, 5))
+                mask_colored = np.zeros((*masks["Martensite"].shape, 3), dtype=np.uint8)
+                mask_colored[masks["Martensite"] == 255] = color_rgb
+                st.image(mask_colored, use_container_width=True)
 
             # ── Validate & save ───────────────────────────────────────────────
             st.markdown("---")

@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import cv2
 import io
+# pyrefly: ignore [missing-import]
 import plotly.express as px
+# pyrefly: ignore [missing-import]
 import plotly.graph_objects as go
 import pandas as pd
 import os
@@ -826,58 +828,23 @@ with tab1:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── Metric cards row ──────────────────────────────────────────────
-            c1, c2, c3, c4 = st.columns(4)
+            # ── Metric card — Martensite only ─────────────────────────────────
             color = "#00C851" if is_ok else "#E31837"
 
-            with c1:
+            col_left, col_center, col_right = st.columns([1, 2, 1])
+            with col_center:
                 st.markdown(f"""
-                <div class="metric-card">
+                <div class="metric-card" style="border-left:4px solid {color};">
                     <div class="metric-name">% Martensite</div>
                     <div class="metric-val" style="color:{color}">{mart_pct:.2f}<span class="metric-unit">%</span></div>
-                </div>""", unsafe_allow_html=True)
-            with c2:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-name">% Ferrite</div>
-                    <div class="metric-val">{percentages['Ferrite']:.2f}<span class="metric-unit">%</span></div>
-                </div>""", unsafe_allow_html=True)
-            with c3:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-name">% Perlite</div>
-                    <div class="metric-val">{percentages['Perlite']:.2f}<span class="metric-unit">%</span></div>
-                </div>""", unsafe_allow_html=True)
-            with c4:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-name">Total Pixels</div>
-                    <div class="metric-val">{total_pixels:,}</div>
                 </div>""", unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── B) Phase table with conditional coloring ──────────────────────
-            st.markdown('<div class="section-title">📋 Répartition des Phases</div>', unsafe_allow_html=True)
+            # ── B) Phase table — Martensite only ──────────────────────────────
+            st.markdown('<div class="section-title">📋 Résultat — Phase Martensite</div>', unsafe_allow_html=True)
 
-            table_rows = ""
-            for name, _, _, _, crit in phases:
-                pct = percentages[name]
-                crit_str = f"{crit:.0f}%" if crit is not None else "—"
-                # Color the percentage red if it exceeds its critical threshold
-                if crit is not None and pct > crit:
-                    pct_style = 'color:#E31837;font-weight:700'
-                else:
-                    pct_style = 'color:#1A1A1A'
-                dot_color = phase_colors_hex[name]
-                table_rows += (
-                    f'<tr>'
-                    f'<td style="padding:10px 14px;"><span style="display:inline-block;width:12px;height:12px;'
-                    f'border-radius:2px;background:{dot_color};margin-right:8px;vertical-align:middle;"></span>{name}</td>'
-                    f'<td style="padding:10px 14px;{pct_style}">{pct:.2f}%</td>'
-                    f'<td style="padding:10px 14px;color:#666">{crit_str}</td>'
-                    f'</tr>'
-                )
+            mart_pct_style = 'color:#E31837;font-weight:700' if mart_pct > 30.0 else 'color:#1A1A1A'
 
             st.markdown(f"""
             <table style="width:100%;border-collapse:collapse;font-family:'Roboto',sans-serif;font-size:14px;">
@@ -889,7 +856,11 @@ with tab1:
                     </tr>
                 </thead>
                 <tbody>
-                    {table_rows}
+                    <tr>
+                        <td style="padding:10px 14px;"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#FF1744;margin-right:8px;vertical-align:middle;"></span>Martensite</td>
+                        <td style="padding:10px 14px;{mart_pct_style}">{mart_pct:.2f}%</td>
+                        <td style="padding:10px 14px;color:#666">30%</td>
+                    </tr>
                 </tbody>
             </table>
             """, unsafe_allow_html=True)

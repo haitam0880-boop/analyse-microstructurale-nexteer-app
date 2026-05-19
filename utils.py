@@ -119,17 +119,26 @@ def generate_pdf_report(data_dict, original_pil, annotated_pil, percentages):
     story = []
     styles = getSampleStyleSheet()
     
-    # Header Placeholder (Blue rect)
+    # Header — Nexteer logo + rapport title
+    logo_path = os.path.join(os.path.dirname(__file__), 'nexteer_logo.png')
+    if os.path.isfile(logo_path):
+        rl_logo = RLImage(logo_path, width=140, height=50)
+        logo_cell = rl_logo
+    else:
+        logo_cell = Paragraph('<font color="#E31837"><b>nexteer</b></font><br/><font size=7>AUTOMOTIVE</font>', styles['Normal'])
+    
     header_data = [
-        [Paragraph('<font color="white"><b>NEXTEER LOGO</b></font>', styles['Normal']), 
+        [logo_cell,
          Paragraph(f'<b>RAPPORT MICROSTRUCTURE</b><br/>{data_dict["timestamp"]}', styles['Normal'])]
     ]
     t_header = Table(header_data, colWidths=[150, 350])
     t_header.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (0,0), colors.HexColor('#004b87')),
-        ('ALIGN', (0,0), (0,0), 'CENTER'),
-        ('VALIGN', (0,0), (0,0), 'MIDDLE'),
+        ('BACKGROUND', (0,0), (-1,0), colors.white),
+        ('LINEBELOW', (0,0), (-1,0), 2, colors.HexColor('#E31837')),
+        ('ALIGN', (0,0), (0,0), 'LEFT'),
+        ('VALIGN', (0,0), (-1,0), 'MIDDLE'),
         ('ALIGN', (1,0), (1,0), 'RIGHT'),
+        ('PADDING', (0,0), (-1,-1), 8),
     ]))
     story.append(t_header)
     story.append(Spacer(1, 20))
@@ -190,7 +199,7 @@ def generate_pdf_report(data_dict, original_pil, annotated_pil, percentages):
     buf_ann.seek(0)
     rl_img_ann = RLImage(buf_ann, width=img_width, height=img_height)
     
-    img_data = [[rl_img_orig, rl_img_ann], ["Originale", "Segmentation Multi-Phase"]]
+    img_data = [[rl_img_orig, rl_img_ann], ["Originale", "Martensite Détectée"]]
     t_img = Table(img_data)
     t_img.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
@@ -200,18 +209,28 @@ def generate_pdf_report(data_dict, original_pil, annotated_pil, percentages):
     story.append(t_img)
     story.append(Spacer(1, 20))
     
-    # Phases
-    phase_data = [['Phase', '% Détecté']]
-    for k, v in percentages.items():
-        phase_data.append([k, f"{v:.2f}%"])
-        
-    t_phase = Table(phase_data, colWidths=[150, 150])
+    # Phases — Martensite only
+    mart_val = percentages.get('Martensite', 0.0)
+    is_ok_color = colors.HexColor('#00C851') if mart_val <= 30 else colors.HexColor('#E31837')
+    phase_data = [
+        ['Phase', '% Détecté', 'Seuil Critique', 'Résultat'],
+        ['Martensite', f"{mart_val:.2f}%", '30%', 'CONFORME' if mart_val <= 30 else 'NON CONFORME']
+    ]
+    t_phase = Table(phase_data, colWidths=[120, 100, 100, 180])
     t_phase.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F5F5F5')),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('PADDING', (0,0), (-1,-1), 6),
+        ('PADDING', (0,0), (-1,-1), 8),
+        # Color the martensite % value
+        ('TEXTCOLOR', (1,1), (1,1), is_ok_color),
+        ('FONTNAME', (1,1), (1,1), 'Helvetica-Bold'),
+        # Color the result cell
+        ('TEXTCOLOR', (3,1), (3,1), is_ok_color),
+        ('FONTNAME', (3,1), (3,1), 'Helvetica-Bold'),
+        # Red accent left border on data row
+        ('LINEAFTER', (0,1), (0,1), 2, colors.HexColor('#E31837')),
     ]))
     story.append(t_phase)
     
